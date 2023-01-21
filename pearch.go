@@ -3,6 +3,7 @@ package pearch
 
 import (
 	"encoding/binary"
+	"errors"
 	"os"
 )
 
@@ -12,7 +13,7 @@ const MACHINE_VALUE_I386 = 0x014c
 const MACHINE_VALUE_X64 = 0x8664
 
 // GetTargetMachineValue reads the file so that f can't be reused
-func GetTargetMachineValue(f *os.File) (uint, error) {
+func GetTargetMachineValue(f *os.File) (uint16, error) {
 	var b [4096]byte
 	_, err := f.Read(b[:])
 	if err != nil {
@@ -20,7 +21,11 @@ func GetTargetMachineValue(f *os.File) (uint, error) {
 	}
 
 	PE_HEADER_ADDR := binary.LittleEndian.Uint32(b[PE_POINTER_OFFSET:])
-	return uint(binary.LittleEndian.Uint16(b[PE_HEADER_ADDR+MACHINE_OFFSET:])), nil
+	if PE_HEADER_ADDR+MACHINE_OFFSET+2 > 4096 {
+		return 0, errors.New("goarch: failed to find PE_HEADER_ADDR in the first 4096 bytes.")
+	}
+
+	return binary.LittleEndian.Uint16(b[PE_HEADER_ADDR+MACHINE_OFFSET:]), nil
 }
 
 func IsX86(filepath string) bool {
