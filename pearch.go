@@ -11,6 +11,7 @@ const PE_POINTER_OFFSET = 60
 const MACHINE_VALUE_I386 = 0x014c
 const MACHINE_VALUE_X64 = 0x8664
 
+// GetTargetMachineValue reads the file so that f can't be reused
 func GetTargetMachineValue(f *os.File) (uint, error) {
 	var b [4096]byte
 	_, err := f.Read(b[:])
